@@ -43,14 +43,17 @@ export default function App() {
         // "." is not valid on firebase keys, but "," are invalid in emails
         const cleanEmail = user.email.replace(/\./g, ",");
         setUsername(cleanEmail);
-        setSignedIn(true);
-        getData(cleanEmail);
+        getData(cleanEmail).then(() => {
+          setSignedIn(true);
+        });
       } else {
         // user is signed out
         console.log("user is logged out");
-        setSignedIn(false);
-        setUsername(null);
-        setUserID(null);
+        getData(null).then(() => {
+          setUsername(null);
+          setUserID(null);
+          setSignedIn(false);
+        });
       }
     });
   }, [setSignedIn, setUsername, setUserID]);
@@ -59,6 +62,11 @@ export default function App() {
     signOut(auth)
       .then(() => {
         //signout successful
+        getData(null).then(() => {
+          setUsername(null);
+          setUserID(null);
+          setSignedIn(false);
+        });
         console.log("signed out successfully");
       })
       .catch((error) => {
@@ -127,7 +135,7 @@ export default function App() {
     }
   };
 
-  const getData = (userName) => {
+  const getData = async (userName) => {
     if (userID) {
       console.log(userName);
       fetch(`${databaseURL}/users/${userName}/shopping_list.json`)
@@ -184,7 +192,7 @@ export default function App() {
               })}
             </div>
           ) : (
-            <div>You have no items!</div>
+            <div>You have no items OR refresh!</div>
           )}
 
           <div className="container">
